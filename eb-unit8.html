@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>EB Unit 8 — Larger &amp; Largest</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:-apple-system,system-ui,"Segoe UI",Arial,sans-serif;background:#fff4e5;color:#3a2a16}
+header{background:#ff8a3d;color:#fff;padding:14px 16px;text-align:center}
+header h1{margin:0;font-size:26px} header p{margin:4px 0 0;font-size:15px;opacity:.95}
+.stars{font-size:22px;text-align:center;padding:8px;background:#fff3a6;font-weight:700}
+nav{display:flex;gap:8px;padding:10px;max-width:900px;margin:0 auto;flex-wrap:wrap}
+nav button{flex:1;min-width:140px;padding:16px 6px;font-size:17px;font-weight:700;border:0;border-radius:16px;background:#fff;color:#3a2a16;box-shadow:0 2px 6px rgba(0,0,0,.15)}
+nav button.active{background:#7c4dff;color:#fff}
+main{max-width:900px;margin:0 auto;padding:6px 12px 30px}
+section{display:none} section.active{display:block}
+.prompt{background:#fff;border-radius:20px;padding:18px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.12);margin-bottom:14px}
+.prompt .q{font-size:24px;font-weight:800;margin:0 0 6px}
+.prompt .hint{font-size:16px;color:#7a6750;margin:0 0 12px}
+.big-speak{font-size:20px;font-weight:800;padding:14px 22px;border:0;border-radius:999px;background:#7c4dff;color:#fff}
+table{width:100%;border-collapse:separate;border-spacing:0 8px}
+td{background:#fff;padding:14px 10px;font-size:20px;font-weight:700;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+td:first-child{border-radius:14px 0 0 14px} td:last-child{border-radius:0 14px 14px 0}
+td.comp{background:#ffe3ec} td.sup{background:#dbeeff}
+tr{cursor:pointer}
+.duo,.trio{display:flex;gap:14px;justify-content:center;align-items:stretch;flex-wrap:wrap}
+.choice{background:#fff;border:4px solid transparent;border-radius:20px;padding:16px;min-width:200px;min-height:190px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;box-shadow:0 2px 8px rgba(0,0,0,.12);cursor:pointer;flex:1}
+.choice:active{transform:scale(.97)}
+.choice .name{font-size:20px;font-weight:800}
+.choice.correct{border-color:#2ecc71;background:#eafff2}
+.choice.wrong{border-color:#ff6b6b;background:#fff0f0;animation:shake .35s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+.feedback{min-height:56px;text-align:center;font-size:24px;font-weight:800;padding:10px}
+.sentence{text-align:center;font-size:21px;font-weight:700;color:#5e35b1;background:#fff;border-radius:14px;padding:12px;display:none}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.wordcard{background:#fff;border:4px solid transparent;border-radius:18px;padding:22px 6px;text-align:center;font-size:23px;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,.12);cursor:pointer}
+.wordcard.correct{border-color:#2ecc71;background:#eafff2}
+.wordcard.wrong{border-color:#ff6b6b;background:#fff0f0}
+.stick{height:14px;background:#8d5a2b;border-radius:7px}
+.road{background:#777;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:28px}
+</style>
+</head>
+<body>
+<header><h1>🐘 EB Unit 8</h1><p>Which is larger? • Which is the largest one?</p></header>
+<div class="stars">⭐ <span id="stars">0</span></div>
+<nav>
+  <button id="tab-learn" class="active" onclick="showTab('learn')">📚 Learn</button>
+  <button id="tab-duo" onclick="showTab('duo')">⚖️ Which is …?</button>
+  <button id="tab-trio" onclick="showTab('trio')">🏆 The Largest!</button>
+  <button id="tab-words" onclick="showTab('words')">🔤 Words</button>
+</nav>
+<main>
+<section id="learn" class="active">
+  <div class="prompt"><p class="q">Tap a line to listen!</p><p class="hint">large → larger → largest</p></div>
+  <table id="learn-table"></table>
+</section>
+
+<section id="duo">
+  <div class="prompt"><p class="q" id="duo-q">Which is larger?</p><p class="hint">Listen, then tap the right one.</p>
+  <button class="big-speak" onclick="speakDuo()">🔊 Listen</button></div>
+  <div class="duo" id="duo-zone"></div>
+  <div class="feedback" id="duo-feedback"></div><div class="sentence" id="duo-sentence"></div>
+</section>
+
+<section id="trio">
+  <div class="prompt"><p class="q" id="trio-q">Which is the largest one?</p><p class="hint">Three sizes — find the biggest or the smallest!</p>
+  <button class="big-speak" onclick="speakTrio()">🔊 Listen</button></div>
+  <div class="trio" id="trio-zone"></div>
+  <div class="feedback" id="trio-feedback"></div><div class="sentence" id="trio-sentence"></div>
+</section>
+
+<section id="words">
+  <div class="prompt"><p class="q">Listen and tap the word!</p><p class="hint">larger or largest? smaller or smallest?</p>
+  <button class="big-speak" onclick="speakWord()">🔊 Listen</button></div>
+  <div class="grid" id="word-grid"></div>
+  <div class="feedback" id="word-feedback"></div>
+</section>
+</main>
+<script>
+const WORDS=[
+ {base:'large',comp:'larger',sup:'largest',emoji:'🐘'},
+ {base:'small',comp:'smaller',sup:'smallest',emoji:'🐜'},
+ {base:'long',comp:'longer',sup:'longest',emoji:'🐍'},
+ {base:'short',comp:'shorter',sup:'shortest',emoji:'✏️'},
+ {base:'young',comp:'younger',sup:'youngest',emoji:'👶'},
+ {base:'old',comp:'older',sup:'oldest',emoji:'👵'},
+ {base:'wide',comp:'wider',sup:'widest',emoji:'🛣️'},
+ {base:'narrow',comp:'narrower',sup:'narrowest',emoji:'🚧'}
+];
+// Duo sets: each has two sides, and the comparative questions that fit them
+const DUOS=[
+ {a:{name:'the elephant',html:'<span style="font-size:130px;line-height:1">🐘</span>'},b:{name:'the ant',html:'<span style="font-size:42px;line-height:1">🐜</span>'},
+  qs:[{adj:'larger',win:'a'},{adj:'smaller',win:'b'}], make:(w,adj)=>`${cap(w.name)} is ${adj} than ${other(w).name}.`},
+ {a:{name:'the stick',html:'<div class="stick" style="width:230px"></div>'},b:{name:'the pencil',html:'<div class="stick" style="width:64px;background:#f4b400"></div><span style="font-size:34px">✏️</span>'},
+  qs:[{adj:'longer',win:'a'},{adj:'shorter',win:'b'}], make:(w,adj)=>`${cap(w.name)} is ${adj} than ${other(w).name}.`},
+ {a:{name:'the baby',html:'<span style="font-size:105px;line-height:1">👶</span>'},b:{name:'the grandmother',html:'<span style="font-size:105px;line-height:1">👵</span>'},
+  qs:[{adj:'younger',win:'a'},{adj:'older',win:'b'}], make:(w,adj)=>`${cap(w.name)} is ${adj} than ${other(w).name}.`},
+ {a:{name:'the road',html:'<div class="road" style="width:230px;height:100px">🚗</div>'},b:{name:'the small road',html:'<div class="road" style="width:78px;height:100px">🚗</div>'},
+  qs:[{adj:'wider',win:'a'},{adj:'narrower',win:'b'}], make:(w,adj)=>`${cap(w.name)} is ${adj} than ${other(w).name}.`}
+];
+let currentDuo=null;
+function other(w){return w===currentDuo.a?currentDuo.b:currentDuo.a;}
+function cap(s){return s.charAt(0).toUpperCase()+s.slice(1);}
+const TRIOS=[{emoji:'⭐',name:'star'},{emoji:'🍎',name:'apple'},{emoji:'🐶',name:'dog'},{emoji:'🐘',name:'elephant'},{emoji:'🎈',name:'balloon'}];
+let stars=0, duoTarget=null, trioTarget=null, wordTarget=null, lockedD=false, lockedT=false, lockedW=false;
+function speak(text){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='en-US';u.rate=0.82;const v=speechSynthesis.getVoices().find(v=>v.lang&&v.lang.startsWith('en'));if(v)u.voice=v;speechSynthesis.speak(u);}catch(e){}}
+if('speechSynthesis' in window) speechSynthesis.getVoices();
+function addStars(){stars++;document.getElementById('stars').textContent=stars;}
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function showTab(id){document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));document.getElementById(id).classList.add('active');document.getElementById('tab-'+id).classList.add('active');if(id==='duo'&&!duoTarget)newDuo();if(id==='trio'&&!trioTarget)newTrio();if(id==='words'&&!wordTarget)newWord();}
+// Learn
+const lt=document.getElementById('learn-table');
+WORDS.forEach(w=>{const tr=document.createElement('tr');tr.innerHTML=`<td>${w.emoji} ${w.base}</td><td class="comp">${w.comp}</td><td class="sup">${w.sup}</td>`;tr.onclick=()=>speak(`${w.base}. ${w.comp}. ${w.sup}.`);lt.appendChild(tr);});
+// Duo
+function newDuo(){lockedD=false;document.getElementById('duo-feedback').textContent='';const s=document.getElementById('duo-sentence');s.style.display='none';
+ currentDuo=DUOS[Math.floor(Math.random()*DUOS.length)];const set=currentDuo;
+ const q=set.qs[Math.floor(Math.random()*set.qs.length)];duoTarget={set,q};
+ document.getElementById('duo-q').textContent=`Which is ${q.adj}, ${set.a.name} or ${set.b.name}?`;
+ const zone=document.getElementById('duo-zone');zone.innerHTML='';
+ shuffle([{side:set.a,key:'a'},{side:set.b,key:'b'}]).forEach(({side,key})=>{const d=document.createElement('div');d.className='choice';d.innerHTML=side.html+`<span class="name">${side.name}</span>`;
+  d.onclick=()=>{if(lockedD)return;if(key===q.win){lockedD=true;d.classList.add('correct');addStars();document.getElementById('duo-feedback').textContent='🎉 Great job!';const sent=set.make(side,q.adj);s.textContent=sent;s.style.display='block';speak('Yes! '+sent);setTimeout(newDuo,2800);}else{d.classList.add('wrong');document.getElementById('duo-feedback').textContent='💪 Try again!';speak('Try again!');setTimeout(()=>d.classList.remove('wrong'),400);}};
+  zone.appendChild(d);});
+ setTimeout(speakDuo,350);
+}
+function speakDuo(){if(!duoTarget)return;const {set,q}=duoTarget;speak(`Which is ${q.adj}, ${set.a.name} or ${set.b.name}?`);}
+// Trio
+function newTrio(){lockedT=false;document.getElementById('trio-feedback').textContent='';const s=document.getElementById('trio-sentence');s.style.display='none';
+ const item=TRIOS[Math.floor(Math.random()*TRIOS.length)];const sup=Math.random()<0.5;
+ trioTarget={item,sup,adj:sup?'largest':'smallest'};
+ document.getElementById('trio-q').textContent=`Which is the ${trioTarget.adj} one?`;
+ const sizes=shuffle([{sz:52,key:'s'},{sz:92,key:'m'},{sz:142,key:'l'}]);
+ const zone=document.getElementById('trio-zone');zone.innerHTML='';
+ sizes.forEach(({sz,key})=>{const d=document.createElement('div');d.className='choice';d.style.minWidth='150px';d.innerHTML=`<span style="font-size:${sz}px;line-height:1">${item.emoji}</span>`;
+  d.onclick=()=>{if(lockedT)return;const win=sup?key==='l':key==='s';if(win){lockedT=true;d.classList.add('correct');addStars();document.getElementById('trio-feedback').textContent='🎉 Great job!';const sent=`The ${item.name} is the ${trioTarget.adj}.`;s.textContent=sent;s.style.display='block';speak('Yes! '+sent);setTimeout(newTrio,2800);}else{d.classList.add('wrong');document.getElementById('trio-feedback').textContent='💪 Try again!';speak('Try again!');setTimeout(()=>d.classList.remove('wrong'),400);}};
+  zone.appendChild(d);});
+ setTimeout(speakTrio,350);
+}
+function speakTrio(){if(!trioTarget)return;speak(`Which is the ${trioTarget.adj} one?`);}
+// Words
+function newWord(){lockedW=false;document.getElementById('word-feedback').textContent='';
+ const w=WORDS[Math.floor(Math.random()*WORDS.length)];const kind=Math.random()<0.5?'comp':'sup';
+ wordTarget={w,answer:kind==='comp'?w.comp:w.sup};
+ const opts=shuffle([w.base,w.comp,w.sup]);const g=document.getElementById('word-grid');g.innerHTML='';
+ opts.forEach(o=>{const d=document.createElement('div');d.className='wordcard';d.textContent=o;
+  d.onclick=()=>{if(lockedW)return;if(o===wordTarget.answer){lockedW=true;d.classList.add('correct');addStars();document.getElementById('word-feedback').textContent='🎉 Great job!';speak(`Yes! ${o}!`);setTimeout(newWord,2200);}else{d.classList.add('wrong');document.getElementById('word-feedback').textContent='💪 Try again!';setTimeout(()=>d.classList.remove('wrong'),400);}};
+  g.appendChild(d);});
+ setTimeout(speakWord,350);
+}
+function speakWord(){if(!wordTarget)return;speak(wordTarget.answer+'. '+wordTarget.answer+'.');}
+</script>
+</body>
+</html>
