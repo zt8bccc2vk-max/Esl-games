@@ -33,15 +33,38 @@ section{display:none} section.active{display:block}
 .sentence{text-align:center;font-size:21px;font-weight:700;color:#0b6fa4;background:#fff;border-radius:14px;padding:12px;margin-top:4px;display:none}
 .next{display:block;margin:12px auto 0;font-size:20px;font-weight:800;padding:14px 28px;border:0;border-radius:999px;background:#2ecc71;color:#fff}
 .sunmoon{font-size:26px}
+
+nav{flex-wrap:wrap} nav button{min-width:128px}
+.roundpill{display:inline-block;background:#16324f;color:#fff;font-weight:800;border-radius:999px;padding:5px 14px;margin:6px 0;font-size:16px}
+.teacher{display:block;font-size:15px;font-weight:700;color:#5a7186;margin-top:8px}
+.teacher input{width:22px;height:22px;vertical-align:-4px}
+.scene{font-size:92px;line-height:1.15;background:linear-gradient(#bfe8ff,#eaf9ff);border-radius:20px;padding:16px;margin-bottom:12px}
+.bag{background:#fff8e1;border:3px dashed #ff8a3d;border-radius:20px;padding:14px;text-align:center;font-size:20px;font-weight:800;margin-bottom:12px;min-height:76px}
+.bag .inbag{font-size:44px}
+.card.inbagpick{border-color:#ffb703;background:#fff6d6}
+.checkbtn{display:block;margin:4px auto 10px;font-size:21px;font-weight:800;padding:15px 30px;border:0;border-radius:999px;background:#ff8a3d;color:#fff}
+.ticket{background:#fffbe6;border:3px dashed #999}
+.client{font-size:84px;line-height:1.1}
+.bubble{background:#fff;border-radius:18px;padding:12px;font-size:20px;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.12);margin-bottom:12px;text-align:center}
+.confetti{position:fixed;top:-16px;width:12px;height:18px;z-index:99;pointer-events:none;border-radius:3px;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(105vh) rotate(720deg)}}
+.pop{animation:pop .45s}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.12)}100%{transform:scale(1)}}
+.voicebar{text-align:center;padding:8px;background:#fff;font-size:15px;font-weight:700}
+.voicebar select{font-size:16px;padding:8px;max-width:55vw;border-radius:10px}
+.voicebar button{font-size:15px;font-weight:800;padding:9px 14px;border:0;border-radius:999px;background:#2ecc71;color:#fff}
 </style>
 </head>
 <body>
 <header><h1>🕐 EA Unit 8</h1><p>What time is the show? • What should I take?</p></header>
 <div class="stars">⭐ <span id="stars">0</span></div>
+<div class="voicebar">🗣️ Voice: <select id="voice-select" onchange="setVoice(this.value)"></select> <button onclick="testVoice()">▶️ Test</button></div>
 <nav>
   <button id="tab-learn" class="active" onclick="showTab('learn')">📚 Learn</button>
   <button id="tab-time" onclick="showTab('time')">🕐 Time Game</button>
-  <button id="tab-pack" onclick="showTab('pack')">🎒 Pack Game</button>
+  <button id="tab-pack" onclick="showTab('pack')">🎒 Pack Your Bag!</button>
+  <button id="tab-weather" onclick="showTab('weather')">🌦️ Weather</button>
+  <button id="tab-ticket" onclick="showTab('ticket')">🎟️ Ticket Master!</button>
 </nav>
 <main>
 <section id="learn" class="active">
@@ -52,7 +75,7 @@ section{display:none} section.active{display:block}
 </section>
 
 <section id="time">
-  <div class="prompt"><p class="q">What time is the show?</p><p class="hint">Listen, then tap the right clock.</p>
+  <div class="prompt"><p class="q">🎬 Don't Miss the Show!</p><p class="hint">What time is the show? Listen, then tap the right clock.</p><span class="roundpill" id="time-round">Round 1 / 5</span><label class="teacher"><input type="checkbox" id="hide-labels" onchange="applyHideLabels()"> Hide the written time — challenge mode</label>
   <button class="big-speak" onclick="speakTime(true)">🔊 Listen</button></div>
   <div class="grid" id="time-grid"></div>
   <div class="feedback" id="time-feedback"></div>
@@ -60,11 +83,33 @@ section{display:none} section.active{display:block}
 </section>
 
 <section id="pack">
-  <div class="prompt"><p class="q">What should I take?</p><p class="hint">Listen: “You should take …” — then tap it!</p>
+  <div class="prompt"><p class="q">🎒 Pack Your Bag!</p><p class="hint">Listen to the list. Tap the objects to put them in your bag, then check!</p><span class="roundpill" id="pack-round">Round 1 / 5</span>
   <button class="big-speak" onclick="speakPack(true)">🔊 Listen</button></div>
+  <div class="bag">🧺 My bag: <span class="inbag" id="bag-items">— empty —</span></div>
   <div class="grid items" id="pack-grid"></div>
+  <button class="checkbtn" onclick="checkBag()">✅ Check my bag!</button>
   <div class="feedback" id="pack-feedback"></div>
   <div class="sentence" id="pack-sentence"></div>
+</section>
+
+<section id="weather">
+  <div class="prompt"><p class="q">🌦️ Weather Adventure</p><p class="hint">Look at the weather. What should I take?</p><span class="roundpill" id="weather-round">Round 1 / 5</span>
+  <button class="big-speak" onclick="speakWeather()">🔊 Listen</button></div>
+  <div class="scene" id="weather-scene">🌧️</div>
+  <div class="bubble" id="weather-text"></div>
+  <div class="grid items" id="weather-grid"></div>
+  <div class="feedback" id="weather-feedback"></div>
+  <div class="sentence" id="weather-sentence"></div>
+</section>
+
+<section id="ticket">
+  <div class="prompt"><p class="q">🎟️ Ticket Master!</p><p class="hint">A customer is coming! Listen and give the right ticket.</p><span class="roundpill" id="ticket-round">Customer 1 / 5</span>
+  <button class="big-speak" onclick="speakTicket()">🔊 Listen</button></div>
+  <div class="client" id="ticket-client">👦</div>
+  <div class="bubble" id="ticket-bubble"></div>
+  <div class="grid" id="ticket-grid"></div>
+  <div class="feedback" id="ticket-feedback"></div>
+  <div class="sentence" id="ticket-sentence"></div>
 </section>
 </main>
 <script>
@@ -86,44 +131,121 @@ const ITEMS=[
  {name:'snacks',emoji:'🍪',spoken:'You should take snacks.'},
  {name:'gloves',emoji:'🧤',spoken:'You should take gloves.'}
 ];
-let stars=0, timeTarget=null, packTarget=null, locked=false;
-function speak(text){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='en-US';u.rate=0.82;const v=speechSynthesis.getVoices().find(v=>v.lang&&v.lang.startsWith('en'));if(v)u.voice=v;speechSynthesis.speak(u);}catch(e){}}
-if('speechSynthesis' in window) speechSynthesis.getVoices();
-function addStars(){stars++;document.getElementById('stars').textContent=stars;}
+let stars=0, timeTarget=null, locked=false;
+let chosenVoice=null;
+function voiceScore(v){const n=(v.name||'').toLowerCase();let sc=0;
+ if(n.includes('premium'))sc+=60; if(n.includes('enhanced'))sc+=50; if(n.includes('natural'))sc+=35;
+ if(n.includes('samantha'))sc+=32; if(n.includes('ava'))sc+=30; if(n.includes('google us english'))sc+=28;
+ if(n.includes('zoe'))sc+=27; if(n.includes('aria'))sc+=26; if(n.includes('jenny'))sc+=26;
+ if(n.includes('karen'))sc+=22; if(n.includes('moira'))sc+=21; if(n.includes('daniel'))sc+=18;
+ if(n.includes('compact'))sc-=40; if((v.lang||'').toLowerCase()==='en-us')sc+=6; if(v.default)sc-=4;
+ return sc;}
+function loadVoices(){try{const all=speechSynthesis.getVoices().filter(v=>v.lang&&v.lang.toLowerCase().startsWith('en'));
+ if(!all.length)return; all.sort((a,b)=>voiceScore(b)-voiceScore(a));
+ const sel=document.getElementById('voice-select'); if(!sel)return;
+ const prev=sel.value; sel.innerHTML='';
+ all.forEach(v=>{const o=document.createElement('option');o.value=v.name;o.textContent=v.name+' ('+v.lang+')';sel.appendChild(o);});
+ if(prev&&all.some(v=>v.name===prev)){sel.value=prev;}
+ chosenVoice=all.find(v=>v.name===sel.value)||all[0]; sel.value=chosenVoice.name;}catch(e){}}
+function setVoice(name){const all=speechSynthesis.getVoices();chosenVoice=all.find(v=>v.name===name)||chosenVoice;}
+function testVoice(){speak('Hello! What time is the show? Nine fifteen!');}
+function speak(text){try{speechSynthesis.cancel();if(!chosenVoice)loadVoices();const u=new SpeechSynthesisUtterance(text);u.lang='en-US';u.rate=0.8;u.pitch=1.05;if(chosenVoice)u.voice=chosenVoice;speechSynthesis.speak(u);}catch(e){}}
+if('speechSynthesis' in window){speechSynthesis.onvoiceschanged=loadVoices;setTimeout(loadVoices,300);setTimeout(loadVoices,1200);}
+function addStars(){stars++;document.getElementById('stars').textContent=stars;yay();confetti();}
+function yay(){try{const ctx=yay.ctx||(yay.ctx=new(window.AudioContext||window.webkitAudioContext)());[523,659,784].forEach((f,i)=>{const o=ctx.createOscillator(),g=ctx.createGain();o.frequency.value=f;o.type='triangle';g.gain.setValueAtTime(.18,ctx.currentTime+i*.09);g.gain.exponentialRampToValueAtTime(.01,ctx.currentTime+i*.09+.25);o.connect(g);g.connect(ctx.destination);o.start(ctx.currentTime+i*.09);o.stop(ctx.currentTime+i*.09+.3);});}catch(e){}}
+function confetti(){const colors=['#ff8a3d','#2a9df4','#ffd23f','#2ecc71','#ff5d8f'];for(let i=0;i<26;i++){const d=document.createElement('div');d.className='confetti';d.style.left=Math.random()*100+'vw';d.style.background=colors[i%colors.length];d.style.animationDuration=(0.9+Math.random()*0.9)+'s';d.style.transform='rotate('+(Math.random()*360)+'deg)';document.body.appendChild(d);setTimeout(()=>d.remove(),2200);}}
 function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 function clockSVG(t){
  const ma=(t.m%60)*6, ha=((t.h%12)+t.m/60)*30; const cx=60,cy=60,r=52;
  let ticks='';for(let i=0;i<12;i++){const a=i*30*Math.PI/180,x1=cx+Math.sin(a)*44,y1=cy-Math.cos(a)*44,x2=cx+Math.sin(a)*50,y2=cy-Math.cos(a)*50;ticks+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#16324f" stroke-width="3"/>`;}
  return `<svg width="120" height="120" viewBox="0 0 120 120"><circle cx="60" cy="60" r="54" fill="#fff" stroke="#e74c3c" stroke-width="5"/>${ticks}<line x1="60" y1="60" x2="${cx+Math.sin(ha*Math.PI/180)*30}" y2="${cy-Math.cos(ha*Math.PI/180)*30}" stroke="#16324f" stroke-width="6" stroke-linecap="round"/><line x1="60" y1="60" x2="${cx+Math.sin(ma*Math.PI/180)*44}" y2="${cy-Math.cos(ma*Math.PI/180)*44}" stroke="#16324f" stroke-width="4" stroke-linecap="round"/><circle cx="60" cy="60" r="5" fill="#e74c3c"/></svg>`;
 }
-function showTab(id){document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));document.getElementById(id).classList.add('active');document.getElementById('tab-'+id).classList.add('active');if(id==='time'&&!timeTarget)newTimeRound();if(id==='pack'&&!packTarget)newPackRound();}
+function showTab(id){document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));document.getElementById(id).classList.add('active');document.getElementById('tab-'+id).classList.add('active');if(id==='time'&&!timeTarget)newTimeRound();if(id==='pack'&&!packTargets)newPackRound();if(id==='weather'&&!weatherScene)newWeatherRound();if(id==='ticket'&&!ticketTarget)newTicketRound();}
 // Learn
 const lt=document.getElementById('learn-times');
 TIMES.forEach(t=>{const d=document.createElement('div');d.className='card';d.innerHTML=clockSVG(t)+`<span class="label">${t.label}</span><span class="sunmoon">${t.icon}</span>`;d.onclick=()=>speak(`It's at ${t.spoken} On February nineteenth.`);lt.appendChild(d);});
 const li=document.getElementById('learn-items');
 ITEMS.forEach(it=>{const d=document.createElement('div');d.className='card';d.innerHTML=`<span class="emoji">${it.emoji}</span><span class="label">${it.name}</span>`;d.onclick=()=>speak(it.spoken);li.appendChild(d);});
 // Time game
+let timeRound=0;
+function applyHideLabels(){const hide=document.getElementById('hide-labels').checked;document.querySelectorAll('#time-grid .label').forEach(l=>l.style.visibility=hide?'hidden':'visible');}
 function newTimeRound(){locked=false;document.getElementById('time-feedback').textContent='';const s=document.getElementById('time-sentence');s.style.display='none';
+ if(timeRound>=5){timeRound=0;}
+ timeRound++;document.getElementById('time-round').textContent='Round '+timeRound+' / 5';
  timeTarget=TIMES[Math.floor(Math.random()*TIMES.length)];
  const opts=shuffle(TIMES.filter(t=>t!==timeTarget)).slice(0,3);const all=shuffle([timeTarget,...opts]);
  const g=document.getElementById('time-grid');g.innerHTML='';
  all.forEach(t=>{const d=document.createElement('div');d.className='card';d.innerHTML=clockSVG(t)+`<span class="label">${t.label}</span><span class="sunmoon">${t.icon}</span>`;
-  d.onclick=()=>{if(locked)return;if(t===timeTarget){locked=true;d.classList.add('correct');addStars();document.getElementById('time-feedback').textContent='🎉 Great job!';s.textContent=`It's at ${timeTarget.label} on February 19th.`;s.style.display='block';speak(`Yes! It's at ${timeTarget.spoken}`);setTimeout(newTimeRound,2600);}else{d.classList.add('wrong');document.getElementById('time-feedback').textContent='💪 Try again!';speak('Try again!');setTimeout(()=>d.classList.remove('wrong'),400);}};
+  d.onclick=()=>{if(locked)return;if(t===timeTarget){locked=true;d.classList.add('correct','pop');addStars();document.getElementById('time-feedback').textContent='🎉 Great job!';s.textContent=`It's at ${timeTarget.label} on February 19th.`;s.style.display='block';speak(`Yes! It's at ${timeTarget.spoken}`);const done=timeRound>=5;if(done){setTimeout(()=>{document.getElementById('time-feedback').textContent='🏆 5 rounds! Amazing!';s.textContent='You did it! 5 shows on time! 🎬';confetti();},900);}setTimeout(newTimeRound,done?3400:2600);}else{d.classList.add('wrong');document.getElementById('time-feedback').textContent='💪 Try again!';speak('Try again!');setTimeout(()=>d.classList.remove('wrong'),400);}};
   g.appendChild(d);});
+ applyHideLabels();
  setTimeout(()=>speakTime(false),350);
 }
 function speakTime(user){if(!timeTarget)newTimeRound();speak(`What time is the show? It's at ${timeTarget.spoken}`);}
-// Pack game
-function newPackRound(){locked=false;document.getElementById('pack-feedback').textContent='';const s=document.getElementById('pack-sentence');s.style.display='none';
- packTarget=ITEMS[Math.floor(Math.random()*ITEMS.length)];
- const opts=shuffle(ITEMS.filter(i=>i!==packTarget)).slice(0,5);const all=shuffle([packTarget,...opts]);
+// Pack Your Bag game (multi-object, level-up rounds: 1, 1, 2, 2, 3 objects)
+let packTargets=null, packRound=0, packPicked=new Set(), packLock=false;
+const PACK_LEVELS=[1,1,2,2,3];
+function listNames(items){const n=items.map(i=>i.name);return n.length===1?n[0]:n.slice(0,-1).join(', ')+' and '+n[n.length-1];}
+function newPackRound(){packLock=false;packPicked=new Set();document.getElementById('pack-feedback').textContent='';const s=document.getElementById('pack-sentence');s.style.display='none';
+ if(packRound>=5)packRound=0;
+ const count=PACK_LEVELS[packRound];packRound++;document.getElementById('pack-round').textContent='Round '+packRound+' / 5';
+ packTargets=shuffle(ITEMS).slice(0,count);
+ const others=shuffle(ITEMS.filter(i=>!packTargets.includes(i))).slice(0,6-count);const all=shuffle([...packTargets,...others]);
  const g=document.getElementById('pack-grid');g.innerHTML='';
  all.forEach(it=>{const d=document.createElement('div');d.className='card';d.innerHTML=`<span class="emoji">${it.emoji}</span><span class="label">${it.name}</span>`;
-  d.onclick=()=>{if(locked)return;if(it===packTarget){locked=true;d.classList.add('correct');addStars();document.getElementById('pack-feedback').textContent='🎉 Great job!';s.textContent=packTarget.spoken;s.style.display='block';speak('Yes! '+packTarget.spoken);setTimeout(newPackRound,2600);}else{d.classList.add('wrong');document.getElementById('pack-feedback').textContent='💪 Try again!';speak('Try again!');setTimeout(()=>d.classList.remove('wrong'),400);}};
+  d.onclick=()=>{if(packLock)return;if(packPicked.has(it)){packPicked.delete(it);d.classList.remove('inbagpick');}else{packPicked.add(it);d.classList.add('inbagpick');speak(it.name);}updateBag();};
   g.appendChild(d);});
+ updateBag();
  setTimeout(()=>speakPack(false),350);
 }
-function speakPack(user){if(!packTarget)newPackRound();speak(`What should I take? ${packTarget.spoken}`);}
+function updateBag(){const el=document.getElementById('bag-items');el.textContent=packPicked.size?[...packPicked].map(i=>i.emoji).join(' '):'— empty —';}
+function checkBag(){if(packLock||!packTargets)return;const ok=packPicked.size===packTargets.length&&packTargets.every(t=>packPicked.has(t));
+ const s=document.getElementById('pack-sentence');
+ if(ok){packLock=true;addStars();document.getElementById('pack-feedback').textContent='🎉 Great job!';s.textContent='I should take '+listNames(packTargets)+'.';s.style.display='block';speak('Yes! You should take '+listNames(packTargets)+'.');const done=packRound>=5;if(done)setTimeout(()=>{document.getElementById('pack-feedback').textContent='🏆 5 rounds! Your bag is perfect!';confetti();},900);setTimeout(newPackRound,done?3400:2800);}
+ else{document.getElementById('pack-feedback').textContent=packPicked.size<packTargets.length?'🧺 Something is missing… Listen again!':'🧺 Too many things! Take one out.';speak('Try again!');}
+}
+function speakPack(user){if(!packTargets)newPackRound();speak('Pack your bag! You should take '+listNames(packTargets)+'.');}
+// Weather Adventure
+let weatherScene=null, weatherRound=0, weatherLock=false, weatherQueue=[];
+const SCENES=[
+ {scene:'🌧️',text:"It's raining.",accept:['an umbrella']},
+ {scene:'🌨️',text:"It's snowing. My hands are cold.",accept:['gloves']},
+ {scene:'🥶',text:"It's cold. My neck is cold.",accept:['a scarf']},
+ {scene:'☀️🧺',text:"It's sunny. It's a picnic. I'm hungry!",accept:['lunch','snacks']},
+ {scene:'🌸🌳',text:"We are at the park. I want to take photos.",accept:['a camera']},
+ {scene:'🌳🗑️',text:"The park has a lot of trash. Let's clean up!",accept:['a trash bag']},
+ {scene:'🏬',text:"Let's go shopping. I need money.",accept:['a wallet']}
+];
+function newWeatherRound(){weatherLock=false;document.getElementById('weather-feedback').textContent='';const s=document.getElementById('weather-sentence');s.style.display='none';
+ if(!weatherQueue.length)weatherQueue=shuffle(SCENES);
+ weatherScene=weatherQueue.pop();weatherRound=(weatherRound%5)+1;document.getElementById('weather-round').textContent='Round '+weatherRound+' / 5';
+ document.getElementById('weather-scene').textContent=weatherScene.scene;document.getElementById('weather-text').textContent=weatherScene.text;
+ const target=ITEMS.find(i=>i.name===weatherScene.accept[0]);
+ const others=shuffle(ITEMS.filter(i=>!weatherScene.accept.includes(i.name))).slice(0,3);const all=shuffle([target,...others]);
+ const g=document.getElementById('weather-grid');g.innerHTML='';
+ all.forEach(it=>{const d=document.createElement('div');d.className='card';d.innerHTML=`<span class="emoji">${it.emoji}</span><span class="label">${it.name}</span>`;
+  d.onclick=()=>{if(weatherLock)return;if(weatherScene.accept.includes(it.name)){weatherLock=true;d.classList.add('correct','pop');addStars();document.getElementById('weather-feedback').textContent='🎉 Great job!';s.textContent='You should take '+it.name+'.';s.style.display='block';speak('Yes! You should take '+it.name+'.');setTimeout(newWeatherRound,2800);}else{d.classList.add('wrong');document.getElementById('weather-feedback').textContent='💪 Try again!';speak('Try again!');setTimeout(()=>d.classList.remove('wrong'),400);}};
+  g.appendChild(d);});
+ setTimeout(speakWeather,350);
+}
+function speakWeather(){if(!weatherScene)return;speak(weatherScene.text+' What should I take?');}
+// Ticket Master
+let ticketTarget=null, ticketRound=0, ticketLock=false;
+const CLIENTS=['👦','👧','👨','👩','🧑','👵','👴','👱','🧕','👲'];
+function newTicketRound(){ticketLock=false;document.getElementById('ticket-feedback').textContent='';const s=document.getElementById('ticket-sentence');s.style.display='none';
+ if(ticketRound>=5)ticketRound=0;
+ ticketRound++;document.getElementById('ticket-round').textContent='Customer '+ticketRound+' / 5';
+ ticketTarget=TIMES[Math.floor(Math.random()*TIMES.length)];
+ document.getElementById('ticket-client').textContent=CLIENTS[Math.floor(Math.random()*CLIENTS.length)];
+ document.getElementById('ticket-bubble').textContent='“Hello! My show is at '+ticketTarget.label+'”';
+ const opts=shuffle(TIMES.filter(t=>t!==ticketTarget)).slice(0,3);const all=shuffle([ticketTarget,...opts]);
+ const g=document.getElementById('ticket-grid');g.innerHTML='';
+ all.forEach(t=>{const d=document.createElement('div');d.className='card ticket';d.innerHTML='🎟️'+clockSVG(t)+`<span class="label">${t.label}</span>`;
+  d.onclick=()=>{if(ticketLock)return;if(t===ticketTarget){ticketLock=true;d.classList.add('correct','pop');addStars();document.getElementById('ticket-feedback').textContent='🎉 Great job! Here is your ticket!';s.textContent="It's at "+ticketTarget.label+'.';s.style.display='block';speak('Yes! Here is your ticket!');const done=ticketRound>=5;if(done)setTimeout(()=>{document.getElementById('ticket-feedback').textContent='🏆 You are a Ticket Master!';document.getElementById('ticket-sentence').textContent='Badge earned: 🎟️ Ticket Master!';confetti();},900);setTimeout(newTicketRound,done?3600:2600);}else{d.classList.add('wrong');document.getElementById('ticket-feedback').textContent='💪 Try again!';speak('Try again!');setTimeout(()=>d.classList.remove('wrong'),400);}};
+  g.appendChild(d);});
+ setTimeout(speakTicket,350);
+}
+function speakTicket(){if(!ticketTarget)return;speak('Hello! My show is at '+ticketTarget.spoken); }
 </script>
 </body>
 </html>

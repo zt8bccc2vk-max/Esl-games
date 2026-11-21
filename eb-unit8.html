@@ -40,16 +40,42 @@ tr{cursor:pointer}
 .wordcard.wrong{border-color:#ff6b6b;background:#fff0f0}
 .stick{height:14px;background:#8d5a2b;border-radius:7px}
 .road{background:#777;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:28px}
+
+.roundpill{display:inline-block;background:#3a2a16;color:#fff;font-weight:800;border-radius:999px;padding:5px 14px;margin:6px 0;font-size:16px}
+.checkbtn{display:block;margin:10px auto;font-size:21px;font-weight:800;padding:15px 30px;border:0;border-radius:999px;background:#7c4dff;color:#fff}
+.catbtn{font-size:19px;font-weight:800;padding:13px 18px;border:0;border-radius:999px;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.15);margin:4px}
+.catbtn.active{background:#ff8a3d;color:#fff}
+input[type=range]{width:92%;height:54px;accent-color:#7c4dff}
+.pmbtn{font-size:30px;font-weight:900;width:64px;height:64px;border:0;border-radius:50%;background:#7c4dff;color:#fff;margin:0 8px}
+.stage{display:flex;gap:14px;justify-content:center;align-items:flex-end;flex-wrap:wrap;background:#fff;border-radius:20px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,.12)}
+.stagebox{text-align:center;min-width:150px}
+.stagebox .nm{font-size:19px;font-weight:800;margin-top:6px}
+.stagebox .real{font-size:15px;color:#7a6750;font-weight:700}
+.ground{border-bottom:5px solid #8d5a2b}
+.barwrap{background:#fff;border-radius:20px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,.12);margin-bottom:12px;overflow:hidden}
+.barlabel{font-size:18px;font-weight:800;margin:8px 0 4px}
+.bar{height:38px;border-radius:19px;display:flex;align-items:center;padding-left:10px;font-size:26px;transition:width .15s}
+.confetti{position:fixed;top:-16px;width:12px;height:18px;z-index:99;pointer-events:none;border-radius:3px;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(105vh) rotate(720deg)}}
+.pop{animation:pop .45s}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.12)}100%{transform:scale(1)}}
+.voicebar{text-align:center;padding:8px;background:#fff;font-size:15px;font-weight:700}
+.voicebar select{font-size:16px;padding:8px;max-width:55vw;border-radius:10px}
+.voicebar button{font-size:15px;font-weight:800;padding:9px 14px;border:0;border-radius:999px;background:#2ecc71;color:#fff}
 </style>
 </head>
 <body>
 <header><h1>🐘 EB Unit 8</h1><p>Which is larger? • Which is the largest one?</p></header>
 <div class="stars">⭐ <span id="stars">0</span></div>
+<div class="voicebar">🗣️ Voice: <select id="voice-select" onchange="setVoice(this.value)"></select> <button onclick="testVoice()">▶️ Test</button></div>
 <nav>
   <button id="tab-learn" class="active" onclick="showTab('learn')">📚 Learn</button>
   <button id="tab-duo" onclick="showTab('duo')">⚖️ Which is …?</button>
   <button id="tab-trio" onclick="showTab('trio')">🏆 The Largest!</button>
   <button id="tab-words" onclick="showTab('words')">🔤 Words</button>
+  <button id="tab-size" onclick="showTab('size')">📏 Size It Up!</button>
+  <button id="tab-tour" onclick="showTab('tour')">🏆 Tournament</button>
+  <button id="tab-stretch" onclick="showTab('stretch')">🐍 Stretch It!</button>
 </nav>
 <main>
 <section id="learn" class="active">
@@ -76,6 +102,53 @@ tr{cursor:pointer}
   <button class="big-speak" onclick="speakWord()">🔊 Listen</button></div>
   <div class="grid" id="word-grid"></div>
   <div class="feedback" id="word-feedback"></div>
+</section>
+
+<section id="size">
+  <div class="prompt"><p class="q">📏 Size It Up!</p><p class="hint">Look at the blue friend. Use the slider — how big is the other one, really?</p><span class="roundpill" id="size-round">Round 1 / 5</span>
+  <button class="big-speak" onclick="speakSize()">🔊 Listen</button></div>
+  <div class="stage">
+    <div class="stagebox ground"><div id="size-ref"></div><div class="nm" id="size-ref-name"></div><div class="real" id="size-ref-real"></div></div>
+    <div class="stagebox ground"><div id="size-target"></div><div class="nm" id="size-target-name"></div><div class="real">Your guess: <span id="size-guess"></span></div></div>
+  </div>
+  <div style="text-align:center;padding:12px 0 2px">
+    <button class="pmbtn" onclick="sizeBump(-10)">−</button>
+    <input type="range" id="size-slider" min="25" max="240" step="5" value="80" oninput="sizeDraw()">
+    <button class="pmbtn" onclick="sizeBump(10)">+</button>
+  </div>
+  <button class="checkbtn" onclick="sizeLockIn()">🔒 Lock In!</button>
+  <div class="feedback" id="size-feedback"></div><div class="sentence" id="size-sentence"></div>
+</section>
+
+<section id="tour">
+  <div class="prompt"><p class="q">🏆 Size Tournament</p><p class="hint">Choose a category, then pick the winner of every duel!</p>
+  <div>
+    <button class="catbtn" id="cat-height" onclick="startTour('height')">🦒 Height</button>
+    <button class="catbtn" id="cat-length" onclick="startTour('length')">🚅 Length</button>
+    <button class="catbtn" id="cat-weight" onclick="startTour('weight')">⚖️ Weight</button>
+  </div>
+  <span class="roundpill" id="tour-stage">Pick a category!</span>
+  <button class="big-speak" onclick="speakTour()">🔊 Listen</button></div>
+  <div class="duo" id="tour-zone"></div>
+  <div class="feedback" id="tour-feedback"></div><div class="sentence" id="tour-sentence"></div>
+</section>
+
+<section id="stretch">
+  <div class="prompt"><p class="q">🐍 Stretch It!</p><p class="hint" id="stretch-q">Make the snake longer than the pencil!</p><span class="roundpill" id="stretch-round">Round 1 / 5</span>
+  <button class="big-speak" onclick="speakStretch()">🔊 Listen</button></div>
+  <div class="barwrap">
+    <div class="barlabel" id="stretch-ref-name">the pencil</div>
+    <div class="bar" id="stretch-ref" style="background:#f4b400;width:130px">✏️</div>
+    <div class="barlabel" id="stretch-target-name">the snake — your turn!</div>
+    <div class="bar" id="stretch-target" style="background:#2ecc71;width:80px">🐍</div>
+  </div>
+  <div style="text-align:center">
+    <button class="pmbtn" onclick="stretchBump(-15)">−</button>
+    <input type="range" id="stretch-slider" min="30" max="320" step="5" value="80" oninput="stretchDraw()" style="width:70%">
+    <button class="pmbtn" onclick="stretchBump(15)">+</button>
+  </div>
+  <button class="checkbtn" onclick="stretchCheck()">✅ Check!</button>
+  <div class="feedback" id="stretch-feedback"></div><div class="sentence" id="stretch-sentence"></div>
 </section>
 </main>
 <script>
@@ -105,11 +178,30 @@ function other(w){return w===currentDuo.a?currentDuo.b:currentDuo.a;}
 function cap(s){return s.charAt(0).toUpperCase()+s.slice(1);}
 const TRIOS=[{emoji:'⭐',name:'star'},{emoji:'🍎',name:'apple'},{emoji:'🐶',name:'dog'},{emoji:'🐘',name:'elephant'},{emoji:'🎈',name:'balloon'}];
 let stars=0, duoTarget=null, trioTarget=null, wordTarget=null, lockedD=false, lockedT=false, lockedW=false;
-function speak(text){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='en-US';u.rate=0.82;const v=speechSynthesis.getVoices().find(v=>v.lang&&v.lang.startsWith('en'));if(v)u.voice=v;speechSynthesis.speak(u);}catch(e){}}
-if('speechSynthesis' in window) speechSynthesis.getVoices();
-function addStars(){stars++;document.getElementById('stars').textContent=stars;}
+let chosenVoice=null;
+function voiceScore(v){const n=(v.name||'').toLowerCase();let sc=0;
+ if(n.includes('premium'))sc+=60; if(n.includes('enhanced'))sc+=50; if(n.includes('natural'))sc+=35;
+ if(n.includes('samantha'))sc+=32; if(n.includes('ava'))sc+=30; if(n.includes('google us english'))sc+=28;
+ if(n.includes('zoe'))sc+=27; if(n.includes('aria'))sc+=26; if(n.includes('jenny'))sc+=26;
+ if(n.includes('karen'))sc+=22; if(n.includes('moira'))sc+=21; if(n.includes('daniel'))sc+=18;
+ if(n.includes('compact'))sc-=40; if((v.lang||'').toLowerCase()==='en-us')sc+=6; if(v.default)sc-=4;
+ return sc;}
+function loadVoices(){try{const all=speechSynthesis.getVoices().filter(v=>v.lang&&v.lang.toLowerCase().startsWith('en'));
+ if(!all.length)return; all.sort((a,b)=>voiceScore(b)-voiceScore(a));
+ const sel=document.getElementById('voice-select'); if(!sel)return;
+ const prev=sel.value; sel.innerHTML='';
+ all.forEach(v=>{const o=document.createElement('option');o.value=v.name;o.textContent=v.name+' ('+v.lang+')';sel.appendChild(o);});
+ if(prev&&all.some(v=>v.name===prev)){sel.value=prev;}
+ chosenVoice=all.find(v=>v.name===sel.value)||all[0]; sel.value=chosenVoice.name;}catch(e){}}
+function setVoice(name){const all=speechSynthesis.getVoices();chosenVoice=all.find(v=>v.name===name)||chosenVoice;}
+function testVoice(){speak('Hello! Which is larger, the elephant or the ant?');}
+function speak(text){try{speechSynthesis.cancel();if(!chosenVoice)loadVoices();const u=new SpeechSynthesisUtterance(text);u.lang='en-US';u.rate=0.8;u.pitch=1.05;if(chosenVoice)u.voice=chosenVoice;speechSynthesis.speak(u);}catch(e){}}
+if('speechSynthesis' in window){speechSynthesis.onvoiceschanged=loadVoices;setTimeout(loadVoices,300);setTimeout(loadVoices,1200);}
+function addStars(){stars++;document.getElementById('stars').textContent=stars;yay();confetti();}
+function yay(){try{const ctx=yay.ctx||(yay.ctx=new(window.AudioContext||window.webkitAudioContext)());[523,659,784].forEach((f,i)=>{const o=ctx.createOscillator(),g=ctx.createGain();o.frequency.value=f;o.type='triangle';g.gain.setValueAtTime(.18,ctx.currentTime+i*.09);g.gain.exponentialRampToValueAtTime(.01,ctx.currentTime+i*.09+.25);o.connect(g);g.connect(ctx.destination);o.start(ctx.currentTime+i*.09);o.stop(ctx.currentTime+i*.09+.3);});}catch(e){}}
+function confetti(){const colors=['#ff8a3d','#7c4dff','#ffd23f','#2ecc71','#ff5d8f'];for(let i=0;i<26;i++){const d=document.createElement('div');d.className='confetti';d.style.left=Math.random()*100+'vw';d.style.background=colors[i%colors.length];d.style.animationDuration=(0.9+Math.random()*0.9)+'s';document.body.appendChild(d);setTimeout(()=>d.remove(),2200);}}
 function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
-function showTab(id){document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));document.getElementById(id).classList.add('active');document.getElementById('tab-'+id).classList.add('active');if(id==='duo'&&!duoTarget)newDuo();if(id==='trio'&&!trioTarget)newTrio();if(id==='words'&&!wordTarget)newWord();}
+function showTab(id){document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));document.getElementById(id).classList.add('active');document.getElementById('tab-'+id).classList.add('active');if(id==='duo'&&!duoTarget)newDuo();if(id==='trio'&&!trioTarget)newTrio();if(id==='words'&&!wordTarget)newWord();if(id==='size'&&!sizeCur)newSizeRound();if(id==='stretch'&&!stretchCur)newStretchRound();}
 // Learn
 const lt=document.getElementById('learn-table');
 WORDS.forEach(w=>{const tr=document.createElement('tr');tr.innerHTML=`<td>${w.emoji} ${w.base}</td><td class="comp">${w.comp}</td><td class="sup">${w.sup}</td>`;tr.onclick=()=>speak(`${w.base}. ${w.comp}. ${w.sup}.`);lt.appendChild(tr);});
@@ -149,6 +241,110 @@ function newWord(){lockedW=false;document.getElementById('word-feedback').textCo
  setTimeout(speakWord,350);
 }
 function speakWord(){if(!wordTarget)return;speak(wordTarget.answer+'. '+wordTarget.answer+'.');}
+
+// ---------- Size It Up! (5 animals in a row, gentle level-up) ----------
+const SIZE_ROUNDS=[
+ {ref:{emoji:'🧍',name:'a person',real:170,px:70},target:{emoji:'🦒',name:'the giraffe',real:500}},
+ {ref:{emoji:'🧍',name:'a person',real:170,px:90},target:{emoji:'🐘',name:'the elephant',real:300}},
+ {ref:{emoji:'🐶',name:'the dog',real:60,px:100},target:{emoji:'🐱',name:'the cat',real:25}},
+ {ref:{emoji:'🧍',name:'a person',real:170,px:100},target:{emoji:'🐴',name:'the horse',real:160}},
+ {ref:{emoji:'🐘',name:'the elephant',real:300,px:120},target:{emoji:'🦓',name:'the zebra',real:140}}
+];
+let sizeCur=null,sizeIdx=0,sizeLock=false;
+function sizeCorrectPx(){return Math.round(sizeCur.ref.px*sizeCur.target.real/sizeCur.ref.real);}
+function sizeGuessCm(){const px=+document.getElementById('size-slider').value;return Math.round(px/sizeCur.ref.px*sizeCur.ref.real);}
+function newSizeRound(){sizeLock=false;document.getElementById('size-feedback').textContent='';const st=document.getElementById('size-sentence');st.style.display='none';
+ sizeCur=SIZE_ROUNDS[sizeIdx%SIZE_ROUNDS.length];document.getElementById('size-round').textContent='Round '+(sizeIdx%5+1)+' / 5';
+ document.getElementById('size-ref').innerHTML=`<span style="font-size:${sizeCur.ref.px}px;line-height:1">${sizeCur.ref.emoji}</span>`;
+ document.getElementById('size-ref-name').textContent=sizeCur.ref.name;
+ document.getElementById('size-ref-real').textContent='about '+sizeCur.ref.real+' cm tall';
+ document.getElementById('size-target-name').textContent=sizeCur.target.name;
+ let start=40+Math.floor(Math.random()*140);if(Math.abs(start-sizeCorrectPx())<25)start=sizeCorrectPx()>120?60:200;
+ const sl=document.getElementById('size-slider');sl.value=start;sizeDraw();
+ setTimeout(speakSize,350);
+}
+function sizeDraw(){if(!sizeCur)return;const px=+document.getElementById('size-slider').value;document.getElementById('size-target').innerHTML=`<span style="font-size:${px}px;line-height:1">${sizeCur.target.emoji}</span>`;document.getElementById('size-guess').textContent='about '+sizeGuessCm()+' cm';}
+function sizeBump(d){const sl=document.getElementById('size-slider');sl.value=+sl.value+d;sizeDraw();}
+function speakSize(){if(!sizeCur)return;speak(`Look! ${cap(sizeCur.ref.name)}. Make ${sizeCur.target.name}! Is it taller or shorter?`);}
+function sizeLockIn(){if(sizeLock||!sizeCur)return;sizeLock=true;const correct=sizeCorrectPx(),guess=sizeGuessCm(),real=sizeCur.target.real;
+ const err=Math.abs(guess-real)/real;const sl=document.getElementById('size-slider');sl.value=correct;sizeDraw();
+ const taller=real>sizeCur.ref.real;const sent=`${cap(sizeCur.target.name)} is ${taller?'taller':'shorter'} than ${sizeCur.ref.name}.`;
+ const st=document.getElementById('size-sentence');st.textContent=sent+' (about '+real+' cm — your guess: '+guess+' cm)';st.style.display='block';
+ if(err<=0.35){addStars();document.getElementById('size-feedback').textContent=err<=0.15?'🎉 WOW! Almost perfect!':'🎉 Great job! So close!';speak('Great job! '+sent);}
+ else{document.getElementById('size-feedback').textContent='👀 Look! This is the real size!';speak('Look! '+sent);}
+ sizeIdx++;const done=sizeIdx%5===0;if(done)setTimeout(()=>{document.getElementById('size-feedback').textContent='🏆 5 animals! Size Master!';confetti();},1000);
+ setTimeout(newSizeRound,done?3800:3400);
+}
+// ---------- Size Tournament ----------
+const TOUR_DATA={
+ height:{comp:'taller',sup:'tallest',unit:'tall',parts:[
+  {emoji:'🦒',name:'the giraffe',v:5,disp:'about 5 m'},{emoji:'🐘',name:'the elephant',v:3,disp:'about 3 m'},
+  {emoji:'🚪',name:'the big door',v:2.1,disp:'about 2.1 m'},{emoji:'🥤',name:'the vending machine',v:1.8,disp:'about 1.8 m'},
+  {emoji:'🧍',name:'the person',v:1.7,disp:'about 1.7 m'},{emoji:'🦓',name:'the zebra',v:1.4,disp:'about 1.4 m'},
+  {emoji:'🐶',name:'the dog',v:0.6,disp:'about 60 cm'},{emoji:'🐜',name:'the ant',v:0.005,disp:'about 5 mm'}]},
+ length:{comp:'longer',sup:'longest',unit:'long',parts:[
+  {emoji:'🚅',name:'the Shinkansen',v:200,disp:'about 200 m'},{emoji:'🚌',name:'the bus',v:12,disp:'about 12 m'},
+  {emoji:'🚗',name:'the car',v:4.5,disp:'about 4.5 m'},{emoji:'🚲',name:'the bicycle',v:1.8,disp:'about 1.8 m'},
+  {emoji:'🗡️',name:'the katana',v:1,disp:'about 1 m'},{emoji:'⚾',name:'the baseball bat',v:0.85,disp:'about 85 cm'},
+  {emoji:'☂️',name:'the umbrella',v:0.8,disp:'about 80 cm'},{emoji:'✏️',name:'the pencil',v:0.18,disp:'about 18 cm'}]},
+ weight:{comp:'heavier',sup:'heaviest',unit:'heavy',parts:[
+  {emoji:'🐘',name:'the elephant',v:5000,disp:'about 5,000 kg'},{emoji:'🚗',name:'the car',v:1500,disp:'about 1,500 kg'},
+  {emoji:'🥤',name:'the vending machine',v:300,disp:'about 300 kg'},{emoji:'🥋',name:'a sumo wrestler',v:150,disp:'about 150 kg'},
+  {emoji:'🧍',name:'the person',v:70,disp:'about 70 kg'},{emoji:'🐶',name:'the dog',v:20,disp:'about 20 kg'},
+  {emoji:'🐱',name:'the cat',v:4,disp:'about 4 kg'},{emoji:'🐜',name:'the ant',v:0.000003,disp:'almost 0 kg — tiny!'}]}
+};
+let tourCat=null,tourRoundList=[],tourPair=0,tourWinners=[],tourLock=false,tourDuel=null;
+function startTour(cat){tourCat=TOUR_DATA[cat];document.querySelectorAll('.catbtn').forEach(b=>b.classList.remove('active'));document.getElementById('cat-'+cat).classList.add('active');
+ tourRoundList=shuffle(tourCat.parts);tourPair=0;tourWinners=[];nextDuel();}
+function stageName(n){return n===8?'Quarter-final':n===4?'Semi-final':n===2?'🏆 FINAL':'Tournament';}
+function nextDuel(){tourLock=false;document.getElementById('tour-feedback').textContent='';const st=document.getElementById('tour-sentence');st.style.display='none';
+ if(tourPair*2>=tourRoundList.length){
+   if(tourRoundList.length===1){document.getElementById('tour-stage').textContent='🏆 Tournament finished!';document.getElementById('tour-feedback').textContent='🏆 Champion: '+tourRoundList[0].name+'!';const s2=document.getElementById('tour-sentence');s2.textContent=cap(tourRoundList[0].name)+' is the '+tourCat.sup+' one! ('+tourRoundList[0].disp+')';s2.style.display='block';confetti();speak('Finished! '+s2.textContent);document.getElementById('tour-zone').innerHTML=`<div class="choice"><span style="font-size:120px">${tourRoundList[0].emoji}</span><span class="name">${tourRoundList[0].name}</span></div>`;return;}
+   tourRoundList=tourWinners;tourWinners=[];tourPair=0;
+   if(tourRoundList.length===1){document.getElementById('tour-stage').textContent='🏆 Tournament finished!';document.getElementById('tour-feedback').textContent='🏆 Champion: '+tourRoundList[0].name+'!';const s2=document.getElementById('tour-sentence');s2.textContent=cap(tourRoundList[0].name)+' is the '+tourCat.sup+' one! ('+tourRoundList[0].disp+')';s2.style.display='block';confetti();speak('Finished! '+s2.textContent);document.getElementById('tour-zone').innerHTML=`<div class="choice"><span style="font-size:120px">${tourRoundList[0].emoji}</span><span class="name">${tourRoundList[0].name}</span></div>`;return;}}
+ const a=tourRoundList[tourPair*2],b=tourRoundList[tourPair*2+1];tourDuel={a,b};
+ const isFinal=tourRoundList.length===2;
+ document.getElementById('tour-stage').textContent=stageName(tourRoundList.length)+' — duel '+(tourPair+1);
+ const zone=document.getElementById('tour-zone');zone.innerHTML='';
+ [a,b].forEach(part=>{const d=document.createElement('div');d.className='choice';d.innerHTML=`<span style="font-size:100px;line-height:1">${part.emoji}</span><span class="name">${part.name}</span>`;
+  d.onclick=()=>{if(tourLock)return;tourLock=true;const winner=a.v>b.v?a:b;const loser=winner===a?b:a;tourWinners.push(winner);
+   const sent=isFinal?`${cap(winner.name)} is the ${tourCat.sup} one!`:`${cap(winner.name)} is ${tourCat.comp} than ${loser.name}.`;
+   const stt=document.getElementById('tour-sentence');stt.textContent=sent+' '+cap(winner.name)+': '+winner.disp+' / '+cap(loser.name)+': '+loser.disp+'.';stt.style.display='block';
+   if(part===winner){addStars();document.getElementById('tour-feedback').textContent='🎉 Yes! Winner!';d.classList.add('correct','pop');}
+   else{document.getElementById('tour-feedback').textContent='💪 Good try! The winner is '+winner.name+'.';d.classList.add('wrong');}
+   speak(sent);tourPair++;setTimeout(nextDuel,3200);};
+  zone.appendChild(d);});
+ setTimeout(speakTour,350);
+}
+function speakTour(){if(!tourDuel||!tourCat)return;const isFinal=tourRoundList.length===2;speak(isFinal?`Final! Which is the ${tourCat.sup} one, ${tourDuel.a.name} or ${tourDuel.b.name}?`:`Which is ${tourCat.comp}, ${tourDuel.a.name} or ${tourDuel.b.name}?`);}
+// ---------- Stretch It! ----------
+const STRETCH_ROUNDS=[
+ {target:{name:'the snake',emoji:'🐍',color:'#2ecc71'},ref:{name:'the pencil',emoji:'✏️',color:'#f4b400',w:130},rel:'longer'},
+ {target:{name:'the ribbon',emoji:'🎀',color:'#ff5d8f'},ref:{name:'the scarf',emoji:'🧣',color:'#9b59b6',w:220},rel:'shorter'},
+ {target:{name:'the train',emoji:'🚂',color:'#2a9df4'},ref:{name:'the bus',emoji:'🚌',color:'#f39c12',w:160},rel:'longer'},
+ {target:{name:'the road',emoji:'🚗',color:'#777'},ref:{name:'the narrow road',emoji:'🚗',color:'#bbb',w:90},rel:'wider'},
+ {target:{name:'the snake',emoji:'🐍',color:'#2ecc71'},ref:{name:'the pencil',emoji:'✏️',color:'#f4b400',w:190},rel:'shorter'}
+];
+let stretchCur=null,stretchIdx=0,stretchLock=false;
+function newStretchRound(){stretchLock=false;document.getElementById('stretch-feedback').textContent='';const st=document.getElementById('stretch-sentence');st.style.display='none';
+ stretchCur=STRETCH_ROUNDS[stretchIdx%STRETCH_ROUNDS.length];document.getElementById('stretch-round').textContent='Round '+(stretchIdx%5+1)+' / 5';
+ document.getElementById('stretch-q').textContent=`Make ${stretchCur.target.name} ${stretchCur.rel} than ${stretchCur.ref.name}!`;
+ const r=document.getElementById('stretch-ref');r.style.width=stretchCur.ref.w+'px';r.style.background=stretchCur.ref.color;r.textContent=stretchCur.ref.emoji;
+ document.getElementById('stretch-ref-name').textContent=stretchCur.ref.name;
+ document.getElementById('stretch-target-name').textContent=stretchCur.target.name+' — your turn!';
+ const t=document.getElementById('stretch-target');t.style.background=stretchCur.target.color;t.textContent=stretchCur.target.emoji;
+ const sl=document.getElementById('stretch-slider');sl.value=stretchCur.ref.w;stretchDraw();
+ setTimeout(speakStretch,350);
+}
+function stretchDraw(){const w=+document.getElementById('stretch-slider').value;document.getElementById('stretch-target').style.width=w+'px';}
+function stretchBump(d){const sl=document.getElementById('stretch-slider');sl.value=+sl.value+d;stretchDraw();}
+function speakStretch(){if(!stretchCur)return;speak(`Make ${stretchCur.target.name} ${stretchCur.rel} than ${stretchCur.ref.name}!`);}
+function stretchCheck(){if(stretchLock||!stretchCur)return;const w=+document.getElementById('stretch-slider').value,rw=stretchCur.ref.w;
+ const wantLong=stretchCur.rel==='longer'||stretchCur.rel==='wider';const ok=wantLong?w>rw+5:w<rw-5;
+ const st=document.getElementById('stretch-sentence');
+ if(ok){stretchLock=true;addStars();document.getElementById('stretch-feedback').textContent='🎉 Great job!';const sent=`${cap(stretchCur.target.name)} is ${stretchCur.rel} than ${stretchCur.ref.name}.`;st.textContent=sent;st.style.display='block';speak('Yes! '+sent);stretchIdx++;const done=stretchIdx%5===0;if(done)setTimeout(()=>{document.getElementById('stretch-feedback').textContent='🏆 5 rounds! Stretch Master!';confetti();},900);setTimeout(newStretchRound,done?3600:2800);}
+ else{document.getElementById('stretch-feedback').textContent=wantLong?'↔️ Not yet! Make it '+stretchCur.rel+'!':'↔️ Not yet! Make it '+stretchCur.rel+'!';speak('Not yet! Make it '+stretchCur.rel+'!');}
+}
 </script>
 </body>
 </html>
