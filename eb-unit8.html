@@ -86,6 +86,24 @@ h2{color:#123A7A}
 header.pic{padding:0;background:none;border-bottom:6px solid #fff}
 .itemimg{width:100%;max-width:220px;border-radius:14px;display:block;margin:0 auto}
 .duoimg{width:100%;border-radius:14px;display:block}
+
+/* ===== V5 Size It Up stage: one ground line, fixed stage, grows upward only ===== */
+.sizestage{position:relative;height:320px;border:4px solid #fff;border-radius:20px;overflow:hidden;box-shadow:0 4px 0 rgba(18,58,122,.12);
+ background-color:#F4FCFF;background-image:repeating-linear-gradient(0deg,rgba(110,180,240,.16) 0 2px,transparent 2px 28px),repeating-linear-gradient(90deg,rgba(110,180,240,.16) 0 2px,transparent 2px 28px),linear-gradient(180deg,#E8F7FF,#FBFFFF)}
+.sizestage .floor{position:absolute;left:0;right:0;bottom:0;height:56px;background:#FFF3D6;z-index:0}
+.sizestage .groundline{position:absolute;left:10px;right:10px;bottom:56px;height:5px;background:#3E9BE0;border-radius:3px;z-index:1}
+.sizestage .bush{position:absolute;bottom:50px;width:76px;height:30px;background:#7EC850;border-radius:50%;opacity:.9;z-index:1}
+.sizestage .bush.bl{left:-16px}.sizestage .bush.br{right:-16px}
+.sizeobj{position:absolute;bottom:59px;text-align:center;z-index:2;line-height:1}
+.sizeobj.ref{left:5%}
+.sizeobj.target{right:5%;cursor:grab;touch-action:none}
+.sizeobj.ghost{right:34%;z-index:1}
+.sizeobj.ghost span{filter:grayscale(.5);opacity:.55}
+.sizeobj .nm{position:absolute;top:100%;left:50%;transform:translateX(-50%);margin-top:9px;font-weight:900;font-size:16px;white-space:nowrap;color:#123A7A}
+.sizeobj .real{position:absolute;top:100%;left:50%;transform:translateX(-50%);margin-top:31px;font-size:13px;font-weight:700;white-space:nowrap;color:#5B7A99}
+.sizeobj .tag{position:absolute;left:50%;transform:translateX(-50%);font-size:11px;font-weight:900;padding:2px 9px;border-radius:999px;white-space:nowrap;color:#fff}
+.sizeobj .tag.you{background:#FF8A3D;bottom:2px}
+.sizeobj .tag.real{background:#3E9BE0;top:100%;margin-top:9px}
 </style>
 </head>
 <body>
@@ -129,15 +147,17 @@ header.pic{padding:0;background:none;border-bottom:6px solid #fff}
 </section>
 
 <section id="size">
-  <div class="prompt"><p class="q">📏 Size It Up!</p><p class="hint">Look at the blue friend. Use the slider — how big is the other one, really?</p><span class="roundpill" id="size-round">Round 1 / 5</span>
+  <div class="prompt"><p class="q">📏 Size It Up!</p><p class="hint">Both friends stand on the same line! Drag the animal up or down, or use the slider — how big is it, really?</p><span class="roundpill" id="size-round">Round 1 / 5</span>
   <button class="big-speak" onclick="speakSize()">🔊 Listen</button></div>
-  <div class="stage">
-    <div class="stagebox ground"><div id="size-ref"></div><div class="nm" id="size-ref-name"></div><div class="real" id="size-ref-real"></div></div>
-    <div class="stagebox ground"><div id="size-target"></div><div class="nm" id="size-target-name"></div><div class="real">Your guess: <span id="size-guess"></span></div></div>
+  <div class="sizestage" id="size-stage">
+    <div class="floor"></div><div class="groundline"></div><div class="bush bl"></div><div class="bush br"></div>
+    <div class="sizeobj ref"><span id="size-ref-emoji"></span><div class="nm" id="size-ref-name"></div><div class="real" id="size-ref-real"></div></div>
+    <div class="sizeobj ghost" id="size-ghost" style="display:none"><span id="size-ghost-emoji"></span><div class="tag real">⭐ REAL</div></div>
+    <div class="sizeobj target" id="size-target"><span id="size-target-emoji"></span><div class="tag you">👆 YOU</div><div class="nm" id="size-target-name"></div><div class="real">Your guess: <span id="size-guess"></span></div></div>
   </div>
   <div style="text-align:center;padding:12px 0 2px">
     <button class="pmbtn" onclick="sizeBump(-10)">−</button>
-    <input type="range" id="size-slider" min="25" max="240" step="5" value="80" oninput="sizeDraw()">
+    <input type="range" id="size-slider" min="24" max="250" step="2" value="80" oninput="sizeDraw()">
     <button class="pmbtn" onclick="sizeBump(10)">+</button>
   </div>
   <button class="checkbtn" onclick="sizeLockIn()">🔒 Lock In!</button>
@@ -274,31 +294,41 @@ const SIZE_ROUNDS=[
  {ref:{emoji:'🧍',name:'a person',real:170,px:100},target:{emoji:'🐴',name:'the horse',real:160}},
  {ref:{emoji:'🐘',name:'the elephant',real:300,px:120},target:{emoji:'🦓',name:'the zebra',real:140}}
 ];
-let sizeCur=null,sizeIdx=0,sizeLock=false;
-function sizeCorrectPx(){return Math.round(sizeCur.ref.px*sizeCur.target.real/sizeCur.ref.real);}
-function sizeGuessCm(){const px=+document.getElementById('size-slider').value;return Math.round(px/sizeCur.ref.px*sizeCur.ref.real);}
+let sizeCur=null,sizeIdx=0,sizeLock=false,sizeScaleV=1;
+function sizePx(cm){return Math.max(18,Math.round(cm*sizeScaleV));}
+function sizeCorrectPx(){return sizePx(sizeCur.target.real);}
+function sizeGuessCm(){return Math.round((+document.getElementById('size-slider').value)/sizeScaleV);}
+function sizeSetPx(px){const sl=document.getElementById('size-slider');sl.value=Math.max(24,Math.min(250,Math.round(px)));sizeDraw();}
 function newSizeRound(){sizeLock=false;document.getElementById('size-feedback').textContent='';const st=document.getElementById('size-sentence');st.style.display='none';
  sizeCur=SIZE_ROUNDS[sizeIdx%SIZE_ROUNDS.length];document.getElementById('size-round').textContent='Round '+(sizeIdx%5+1)+' / 5';
- document.getElementById('size-ref').innerHTML=`<span style="font-size:${sizeCur.ref.px}px;line-height:1">${sizeCur.ref.emoji}</span>`;
+ sizeScaleV=234/Math.max(sizeCur.ref.real,sizeCur.target.real);
+ document.getElementById('size-ref-emoji').innerHTML=`<span style="font-size:${sizePx(sizeCur.ref.real)}px;line-height:1">${sizeCur.ref.emoji}</span>`;
  document.getElementById('size-ref-name').textContent=sizeCur.ref.name;
  document.getElementById('size-ref-real').textContent='about '+sizeCur.ref.real+' cm tall';
  document.getElementById('size-target-name').textContent=sizeCur.target.name;
+ document.getElementById('size-ghost').style.display='none';
  let start=40+Math.floor(Math.random()*140);if(Math.abs(start-sizeCorrectPx())<25)start=sizeCorrectPx()>120?60:200;
- const sl=document.getElementById('size-slider');sl.value=start;sizeDraw();
+ sizeSetPx(start);
  setTimeout(speakSize,350);
 }
-function sizeDraw(){if(!sizeCur)return;const px=+document.getElementById('size-slider').value;document.getElementById('size-target').innerHTML=`<span style="font-size:${px}px;line-height:1">${sizeCur.target.emoji}</span>`;document.getElementById('size-guess').textContent='about '+sizeGuessCm()+' cm';}
-function sizeBump(d){const sl=document.getElementById('size-slider');sl.value=+sl.value+d;sizeDraw();}
+function sizeDraw(){if(!sizeCur)return;const px=+document.getElementById('size-slider').value;document.getElementById('size-target-emoji').innerHTML=`<span style="font-size:${px}px;line-height:1">${sizeCur.target.emoji}</span>`;document.getElementById('size-guess').textContent='about '+sizeGuessCm()+' cm';}
+function sizeBump(d){if(sizeLock)return;sizeSetPx(+document.getElementById('size-slider').value+d);}
 function speakSize(){if(!sizeCur)return;speak(`Look! ${cap(sizeCur.ref.name)}. Make ${sizeCur.target.name}! Is it taller or shorter?`);}
 function sizeLockIn(){if(sizeLock||!sizeCur)return;sizeLock=true;const correct=sizeCorrectPx(),guess=sizeGuessCm(),real=sizeCur.target.real;
- const err=Math.abs(guess-real)/real;const sl=document.getElementById('size-slider');sl.value=correct;sizeDraw();
+ const err=Math.abs(guess-real)/real;
+ const gh=document.getElementById('size-ghost');document.getElementById('size-ghost-emoji').innerHTML=`<span style="font-size:${correct}px;line-height:1">${sizeCur.target.emoji}</span>`;gh.style.display='block';
  const taller=real>sizeCur.ref.real;const sent=`${cap(sizeCur.target.name)} is ${taller?'taller':'shorter'} than ${sizeCur.ref.name}.`;
- const st=document.getElementById('size-sentence');st.textContent=sent+' (about '+real+' cm — your guess: '+guess+' cm)';st.style.display='block';
+ const st=document.getElementById('size-sentence');st.textContent=sent+' — Your answer: about '+guess+' cm • Real: about '+real+' cm';st.style.display='block';
  if(err<=0.35){addStars();document.getElementById('size-feedback').textContent=err<=0.15?'🎉 WOW! Almost perfect!':'🎉 Great job! So close!';speak('Great job! '+sent);}
- else{document.getElementById('size-feedback').textContent='👀 Look! This is the real size!';speak('Look! '+sent);}
- sizeIdx++;const done=sizeIdx%5===0;if(done)setTimeout(()=>{document.getElementById('size-feedback').textContent='🏆 5 animals! Size Master!';confetti();},1000);
- setTimeout(newSizeRound,done?3800:3400);
+ else{document.getElementById('size-feedback').textContent='👀 Look! The blue one is the real size!';speak('Look! '+sent);}
+ sizeIdx++;const done=sizeIdx%5===0;if(done)setTimeout(()=>{document.getElementById('size-feedback').textContent='🏆 5 animals! Size Master!';confetti();},1200);
+ setTimeout(newSizeRound,done?4600:4200);
 }
+// Drag the target up/down to resize (like Magnitudle) — it stays on the same ground line
+let dragY=null,dragPx=0;const sizeTgt=document.getElementById('size-target');
+sizeTgt.addEventListener('pointerdown',e=>{if(sizeLock)return;dragY=e.clientY;dragPx=+document.getElementById('size-slider').value;try{sizeTgt.setPointerCapture(e.pointerId);}catch(err){}});
+sizeTgt.addEventListener('pointermove',e=>{if(dragY===null||sizeLock)return;sizeSetPx(dragPx+(dragY-e.clientY));});
+['pointerup','pointercancel'].forEach(ev=>sizeTgt.addEventListener(ev,()=>{dragY=null;}));
 // ---------- Size Tournament ----------
 const TOUR_DATA={
  height:{comp:'taller',sup:'tallest',unit:'tall',parts:[
